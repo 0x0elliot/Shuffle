@@ -20,10 +20,8 @@ jobs:
     - name: If architecture is macos-latest, Install docker # Taken from https://github.com/actions/virtual-environments/issues/1143#issuecomment-652264388
       if: matrix.os == 'macos-latest'
       run: |
-        mkdir -p ~/.docker/machine/cache
-        curl -Lo ~/.docker/machine/cache/boot2docker.iso https://github.com/boot2docker/boot2docker/releases/download/v19.03.12/boot2docker.iso
-        brew install docker docker-machine docker-compose
         brew install --cask docker # installing docker desktop
+        brew install docker-compose
         open --background -a Docker
 
         sudo curl -L "https://github.com/docker/compose/releases/download/2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
