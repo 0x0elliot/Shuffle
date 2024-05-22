@@ -23,7 +23,7 @@ jobs:
         brew install --cask docker # installing docker desktop
         curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         chmod +x /usr/local/bin/docker-compose
-        open --background -a Docker
+        open --background -a docker
 
     - name: Build the stack
       run: docker compose up -d
