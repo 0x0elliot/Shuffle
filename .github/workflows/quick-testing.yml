@@ -20,10 +20,10 @@ jobs:
     - name: If architecture is macos-latest, Install docker # Taken from https://github.com/actions/virtual-environments/issues/1143#issuecomment-652264388
       if: matrix.os == 'macos-latest'
       run: |
-        brew install --cask docker # install docker desktop
-        # brew install docker-compose
-        open /Applications/Docker.app
-        sudo docker system info
+        brew install colima
+        export DOCKER_HOST=unix:///$HOME/.colima/docker.sock
+        colima start
+        docker system info
 
     - name: Build the stack
       run: docker compose up -d
