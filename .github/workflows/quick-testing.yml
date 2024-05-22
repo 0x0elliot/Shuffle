@@ -20,7 +20,7 @@ jobs:
     - name: If architecture is macos-latest, Install docker # Taken from https://github.com/actions/virtual-environments/issues/1143#issuecomment-652264388
       if: matrix.os == 'macos-latest'
       run: |
-        brew install --cask --no−quarantine docker # install docker desktop
+        brew install docker # install docker desktop
         # brew install docker-compose
         open /Applications/Docker.app
         while ! docker system info > /dev/null 2>&1; do
