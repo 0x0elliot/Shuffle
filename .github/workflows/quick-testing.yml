@@ -23,10 +23,7 @@ jobs:
         brew install --cask docker # install docker desktop
         # brew install docker-compose
         open /Applications/Docker.app
-        while ! docker system info > /dev/null 2>&1; do
-          echo "Waiting for Docker to start..."
-          sleep 5
-        done
+        docker system info
 
     - name: Build the stack
       run: docker compose up -d
