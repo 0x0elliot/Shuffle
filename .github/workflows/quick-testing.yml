@@ -23,7 +23,7 @@ jobs:
         brew install --cask docker # install docker desktop
         # brew install docker-compose
         open /Applications/Docker.app
-        docker system info
+        sudo docker system info
 
     - name: Build the stack
       run: docker compose up -d
