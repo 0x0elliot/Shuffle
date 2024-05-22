@@ -24,11 +24,8 @@ jobs:
         brew install docker-compose
         open --background -a Docker
 
-        sudo curl -L "https://github.com/docker/compose/releases/download/2.27.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-        sudo chmod +x /usr/local/bin/docker-compose
-
     - name: Build the stack
-      run: docker-compose up -d
+      run: docker compose up -d
 
     - name: Wait for 30 seconds
       run: sleep 30
