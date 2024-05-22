@@ -24,6 +24,7 @@ jobs:
         brew install colima
         export DOCKER_HOST=unix:///$HOME/.colima/docker.sock
         colima start
+        brew services start colima
         docker system info
 
     - name: Build the stack
