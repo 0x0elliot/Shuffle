@@ -17,16 +17,11 @@ jobs:
     - name: Set up opensearch directory
       run: mkdir shuffle-database && chmod -R 777 shuffle-database
 
-    - name: Set up Docker
-      if: matrix.os == 'macos-latest'
-      uses: appleboy/docker-setup-action@v1
-      with:
-        version: '20.10.5'
-
     - name: If architecture is macos-latest, Install docker # Taken from https://github.com/actions/virtual-environments/issues/1143#issuecomment-652264388
       if: matrix.os == 'macos-latest'
       run: |
         brew install --cask docker # install docker desktop
+        # brew install docker-compose
         open /Applications/Docker.app
         while ! docker system info > /dev/null 2>&1; do
           echo "Waiting for Docker to start..."
