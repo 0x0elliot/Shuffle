@@ -17,15 +17,12 @@ jobs:
     - name: Set up opensearch directory
       run: mkdir shuffle-database && chmod -R 777 shuffle-database
 
-    - name: If architecture is macos-latest, Install docker # Taken from https://github.com/actions/virtual-environments/issues/1143#issuecomment-652264388
-      if: matrix.os == 'macos-latest'
-      run: |
-        brew install docker
-        brew install colima
-        export DOCKER_HOST=unix:///$HOME/.colima/docker.sock
-        colima start
-        brew services start colima
-        docker system info
+    - uses: docker-practice/actions-setup-docker@master
+      if: os == 'macos-latest'
+      timeout-minutes: 12
+    - run : |
+        docker --version
+        docker-compose --version
 
     - name: Build the stack
       run: docker compose up -d
