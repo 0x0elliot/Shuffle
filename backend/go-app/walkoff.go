@@ -578,6 +578,7 @@ func handleGetStreamResults(resp http.ResponseWriter, request *http.Request) {
 		if len(actionResult.ExecutionId) > 0 {
 			log.Printf("[WARNING][%s] Failed getting execution (streamresult): %s", actionResult.ExecutionId, err)
 		}
+
 		resp.WriteHeader(401)
 		resp.Write([]byte(fmt.Sprintf(`{"success": false, "reason": "Bad authorization key or execution_id might not exist."}`)))
 		return
@@ -921,6 +922,12 @@ func deleteWorkflow(resp http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	if len(workflow.ParentWorkflowId) > 0 {
+		resp.WriteHeader(403)
+		resp.Write([]byte(`{"success": false, "reason": "Can't delete a workflow distributed from your parent org"}`))
+		return 
+	}
+
 	if user.Id != workflow.Owner || len(user.Id) == 0 {
 		if workflow.OrgId == user.ActiveOrg.Id && user.Role == "admin" {
 			log.Printf("[INFO] User %s is deleting workflow %s as admin. Owner: %s", user.Username, workflow.ID, workflow.Owner)
@@ -1056,24 +1063,25 @@ func handleExecution(id string, workflow shuffle.Workflow, request *http.Request
 		}
 	}
 
-	workflowExecution, execInfo, _, err := shuffle.PrepareWorkflowExecution(ctx, workflow, request, int64(maxExecutionDepth))
-	if err != nil {
-		err = shuffle.SetWorkflowExecution(ctx, workflowExecution, true)
+	workflowExecution, execInfo, _, workflowExecErr := shuffle.PrepareWorkflowExecution(ctx, workflow, request, int64(maxExecutionDepth))
+	if workflowExecErr != nil {
+		err := shuffle.SetWorkflowExecution(ctx, workflowExecution, true)
 		if err != nil {
 			log.Printf("[ERROR] Failed setting workflow execution during init (2): %s", err)
 		}
 
-		if strings.Contains(fmt.Sprintf("%s", err), "User Input") {
+		if strings.Contains(fmt.Sprintf("%s", workflowExecErr), "User Input") {
 			// Special for user input callbacks
-			return workflowExecution, fmt.Sprintf("%s", err), nil
+			log.Printf("[INFO] User input callback: %s", workflowExecErr)
+			// return workflowExecution, fmt.Sprintf("%s", err), nil
 		} else {
 			log.Printf("[ERROR] Failed in prepareExecution: '%s'", err)
-			return shuffle.WorkflowExecution{}, fmt.Sprintf("Failed starting workflow: %s", err), err
+			return shuffle.WorkflowExecution{}, fmt.Sprintf("Failed running: %s", err), err
 		}
 	}
 
 
-	err = imageCheckBuilder(execInfo.ImageNames)
+	err := imageCheckBuilder(execInfo.ImageNames)
 	if err != nil {
 		log.Printf("[ERROR] Failed building the required images from %#v: %s", execInfo.ImageNames, err)
 		return shuffle.WorkflowExecution{}, "Failed unmarshal during execution", err
@@ -3374,6 +3382,8 @@ func executeSingleAction(resp http.ResponseWriter, request *http.Request) {
 		return
 	}
 
+	debugUrl := fmt.Sprintf("/workflows/%s?execution_id=%s", workflowExecution.Workflow.ID, workflowExecution.ExecutionId)
+	resp.Header().Add("X-Debug-Url", debugUrl)
 
 	workflowExecution.Priority = 11
 	environments, err := shuffle.GetEnvironments(ctx, user.ActiveOrg.Id)

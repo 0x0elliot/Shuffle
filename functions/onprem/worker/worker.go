@@ -2456,12 +2456,13 @@ func downloadDockerImageBackend(client *http.Client, imageName string) error {
 		return nil
 	}
 	
-	log.Printf("[DEBUG] Trying to download image %s from backend %s as it doesn't exist. All images: %#v", imageName, baseUrl, downloadedImages)
 	
 	downloadedImages = append(downloadedImages, imageName)
 	
 	data := fmt.Sprintf(`{"name": "%s"}`, imageName)
 	dockerImgUrl := fmt.Sprintf("%s/api/v1/get_docker_image", baseUrl)
+
+	log.Printf("[DEBUG] Trying to download image %s from backend %s as it doesn't exist. Data sent: %#v, All images: %#v", imageName, baseUrl, data, downloadedImages)
 	
 	req, err := http.NewRequest(
 		"POST",
@@ -2980,7 +2981,7 @@ func getStreamResultsWrapper(client *http.Client, req *http.Request, workflowExe
 func main() {
 	// Elasticsearch necessary to ensure we'ren ot running with Datastore configurations for minimal/maximal data sizes
 	// Recursive import kind of :)
-	_, err := shuffle.RunInit(*shuffle.GetDatastore(), *shuffle.GetStorage(), "", "worker", true, "elasticsearch")
+	_, err := shuffle.RunInit(*shuffle.GetDatastore(), *shuffle.GetStorage(), "", "worker", true, "elasticsearch", false, 0)
 	if err != nil {
 		if !strings.Contains(fmt.Sprintf("%s", err), "no such host") {
 			log.Printf("[ERROR] Failed to run worker init: %s", err)

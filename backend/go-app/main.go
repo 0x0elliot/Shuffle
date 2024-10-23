@@ -759,6 +759,8 @@ func handleInfo(resp http.ResponseWriter, request *http.Request) {
 		}
 	}
 
+	go shuffle.CheckSessionOrgs(ctx, userInfo)
+
 	//log.Printf("%s  %s", session.Session, UserInfo.Session)
 	//if session.Session != userInfo.Session {
 	//	log.Printf("Session %s is not the same as %s for %s. %s", userInfo.Session, session.Session, userInfo.Username, err)
@@ -3614,7 +3616,7 @@ func remoteOrgJobHandler(org shuffle.Org, interval int) error {
 	}
 
 	if org.SyncConfig.WorkflowBackup {
-		workflows, err := shuffle.GetAllWorkflowsByQuery(ctx, foundUser)
+		workflows, err := shuffle.GetAllWorkflowsByQuery(ctx, foundUser, 250, "")
 		if err != nil {
 			log.Printf("[ERROR] Failed getting backup workflows for org %s: %s", org.Id, err)
 		} else {
@@ -4887,7 +4889,7 @@ func initHandlers() {
 	}
 
 	for {
-		_, err = shuffle.RunInit(*shuffle.GetDatastore(), *shuffle.GetStorage(), gceProject, "onprem", true, elasticConfig)
+		_, err = shuffle.RunInit(*shuffle.GetDatastore(), *shuffle.GetStorage(), gceProject, "onprem", true, elasticConfig, false, 0)
 		if err != nil {
 			log.Printf("[ERROR] Error in initial database connection. Retrying in 5 seconds. %s", err)
 			time.Sleep(5 * time.Second)
@@ -5015,6 +5017,7 @@ func initHandlers() {
 	r.HandleFunc("/api/v1/workflows/{key}/schedule/{schedule}", stopSchedule).Methods("DELETE", "OPTIONS")
 	r.HandleFunc("/api/v1/workflows/{key}/stream", shuffle.HandleStreamWorkflow).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/v1/workflows/{key}/stream", shuffle.HandleStreamWorkflowUpdate).Methods("POST", "OPTIONS")
+	r.HandleFunc("/api/v1/workflows/{key}/duplicate", shuffle.DuplicateWorkflow).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/v1/workflows/{key}", deleteWorkflow).Methods("DELETE", "OPTIONS")
 	r.HandleFunc("/api/v1/workflows/{key}", shuffle.SaveWorkflow).Methods("PUT", "OPTIONS")
 	r.HandleFunc("/api/v1/workflows/{key}", shuffle.GetSpecificWorkflow).Methods("GET", "OPTIONS")
@@ -5027,6 +5030,7 @@ func initHandlers() {
 	r.HandleFunc("/api/v1/recommendations/get_actions", shuffle.HandleActionRecommendation).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/v1/recommendations/modify", shuffle.HandleRecommendationAction).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/v1/workflows/{key}/revisions", shuffle.GetWorkflowRevisions).Methods("GET", "OPTIONS")
+	r.HandleFunc("/api/v1/workflows/{key}/child_workflows", shuffle.GetChildWorkflows).Methods("GET", "OPTIONS")
 
 	// Triggers
 	r.HandleFunc("/api/v1/hooks/new", shuffle.HandleNewHook).Methods("POST", "OPTIONS")
@@ -5109,7 +5113,6 @@ func initHandlers() {
 	// Important for email, IDS etc. Create this by:
 	// PS: For cloud, this has to use cloud storage.
 	// https://developer.box.com/reference/get-files-id-content/
-	// 1. Creating the "get file" option. Make it possible to run this in the frontend.
 	r.HandleFunc("/api/v1/files/download_remote", shuffle.HandleDownloadRemoteFiles).Methods("POST", "OPTIONS")
 	r.HandleFunc("/api/v1/files/namespaces/{namespace}", shuffle.HandleGetFileNamespace).Methods("GET", "OPTIONS")
 	r.HandleFunc("/api/v1/files/{fileId}/content", shuffle.HandleGetFileContent).Methods("GET", "OPTIONS")
