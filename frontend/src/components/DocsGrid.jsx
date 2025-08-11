@@ -29,7 +29,7 @@ import {
 
 	
 
-const searchClient = algoliasearch("JNSS5CFDZZ", "db08e40265e2941b9a7d8f644b6e5240")
+const searchClient = algoliasearch("JNSS5CFDZZ", "c8f882473ff42d41158430be09ec2b4e")
 const DocsGrid = props => {
 	const { maxRows, showName, showSuggestion, isMobile, globalUrl, parsedXs, userdata, }  = props
 	const rowHandler = maxRows === undefined || maxRows === null ? 50 : maxRows
@@ -123,6 +123,11 @@ const DocsGrid = props => {
 					onChange={(event) => {
 						removeQuery("q")
 						refine(event.currentTarget.value)
+					}}
+					onKeyDown={(event) => {
+						if(event.key === "Enter") {
+							event.preventDefault();
+						}
 					}}
 					limit={5}
 				/>
@@ -274,7 +279,7 @@ const DocsGrid = props => {
 				</Button>
 			</div>
 			*/}
-			<div style={{width: "100%", position: "relative", height: "100%",}}>
+			<div style={{width: "100%", position: "relative", height: "100%", padding: "0px 180px"}}>
 				<InstantSearch searchClient={searchClient} indexName="documentation">
 					<div style={{maxWidth: 450, margin: "auto", marginTop: 15, marginBottom: 15, }}>
 						<CustomSearchBox />

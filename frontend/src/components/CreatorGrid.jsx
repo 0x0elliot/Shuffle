@@ -37,7 +37,7 @@ import {
   AvatarGroup,
 } from "@mui/material"
 
-const searchClient = algoliasearch("JNSS5CFDZZ", "db08e40265e2941b9a7d8f644b6e5240")
+const searchClient = algoliasearch("JNSS5CFDZZ", "c8f882473ff42d41158430be09ec2b4e")
 const CreatorGrid = props => {
 	const { maxRows, showName, showSuggestion, isMobile, globalUrl, parsedXs, isHeader }  = props
 	const rowHandler = maxRows === undefined || maxRows === null ? 50 : maxRows
@@ -136,6 +136,11 @@ const CreatorGrid = props => {
 						removeQuery("q")
 						refine(event.currentTarget.value)
 					}}
+					onKeyDown={(event) => {
+						if(event.key === "Enter") {
+							event.preventDefault();
+						}
+					}}
 				/>
 				{/*isSearchStalled ? 'My search is stalled' : ''*/}
 			</form>
@@ -147,6 +152,7 @@ const CreatorGrid = props => {
     flexWrap: "wrap",
     alignContent: "space-between",
     marginTop: 5,
+	padding:"0px 180px",
   }
 	
 	const Hits = ({ hits }) => {
